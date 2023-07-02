@@ -30,7 +30,25 @@ def get_folder_name():
         os.makedirs(folder_path, exist_ok=True)
         return folder_path
 
-# def extract_attachments(msg):
+def extract_attachments(msg, folder_path):
+    
+    file_path = "No attachment found."
+
+    for part in msg.walk():
+        if part.get_content_maintype() == 'multipart':
+            continue
+
+        if part.get('Content-Disposition') is None:
+            continue
+
+        filename = part.get_filename()
+        file_path = os.path.join(folder_path, filename)
+        
+        if filename:
+            with open(file_path, 'wb') as downloaded_file:
+                downloaded_file.write(part.get_payload(decode=True))
+            downloaded_file.close()
+
 
 
 
@@ -75,5 +93,6 @@ for id in mail_id_list:
     _, mail_data = myMail.fetch(id, '(RFC822)') ## Fetch mail data.
     message = email.message_from_bytes(mail_data[0][1]) ## Construct Message from mail data
     display_message(message)
+    extract_attachments(message, get_folder_name())
 
 myMail.close()
