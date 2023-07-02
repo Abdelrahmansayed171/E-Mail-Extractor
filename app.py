@@ -1,4 +1,4 @@
-import imaplib, email, yaml
+import imaplib, email, yaml, os
 
 def display_message(msg):
     print("================== Start of Mail [{}] ====================".format(id))
@@ -14,6 +14,24 @@ def display_message(msg):
             body_lines = part.as_string().split("\n")
             print("\n".join(body_lines[2:])) ### Print from the third line to the end
     print("================== End of Mail [{}] ====================\n".format(id))
+
+def get_folder_name():
+    folder_name = "Attachments"
+
+    # Get the current directory
+    current_directory = os.getcwd()
+    
+    # Create the path for the new folder by joining Current path to new folder name together
+    folder_path = os.path.join(current_directory, folder_name)
+
+    if os.path.isdir(folder_path):
+        return folder_path
+    else:
+        os.makedirs(folder_path, exist_ok=True)
+        return folder_path
+
+# def extract_attachments(msg):
+
 
 
 #Let us Open input authentication file
