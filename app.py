@@ -1,5 +1,21 @@
 import imaplib, email, yaml
 
+def display_message(msg):
+    print("================== Start of Mail [{}] ====================".format(id))
+    print("From       : {}".format(message.get("From")))
+    print("To         : {}".format(message.get("To")))
+    print("Bcc        : {}".format(message.get("Bcc")))
+    print("Date       : {}".format(message.get("Date")))
+    print("Subject    : {}".format(message.get("Subject")))
+
+    print("Body : ")
+    for part in message.walk():
+        if part.get_content_type() == "text/plain":
+            body_lines = part.as_string().split("\n")
+            print("\n".join(body_lines[2:])) ### Print from the third line to the end
+    print("================== End of Mail [{}] ====================\n".format(id))
+
+
 #Let us Open input authentication file
 with open("auth.yml") as authFile:
     content = authFile.read()
@@ -38,26 +54,8 @@ except Exception as e:
 
 
 for id in mail_id_list:
-    print("================== Start of Mail [{}] ====================".format(id))
-    
-    
     _, mail_data = myMail.fetch(id, '(RFC822)') ## Fetch mail data.
-
     message = email.message_from_bytes(mail_data[0][1]) ## Construct Message from mail data
-    
-    print("From       : {}".format(message.get("From")))
-    print("To         : {}".format(message.get("To")))
-    print("Bcc        : {}".format(message.get("Bcc")))
-    print("Date       : {}".format(message.get("Date")))
-    print("Subject    : {}".format(message.get("Subject")))
-
-    print("Body : ")
-    for part in message.walk():
-        if part.get_content_type() == "text/plain":
-            body_lines = part.as_string().split("\n")
-            print("\n".join(body_lines[2:])) ### Print from the third line to the end
-    
-
-    print("================== End of Mail [{}] ====================\n".format(id))
+    display_message(message)
 
 myMail.close()
