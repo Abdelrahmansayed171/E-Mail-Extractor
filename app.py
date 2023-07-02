@@ -15,12 +15,12 @@ def display_message(msg):
             print("\n".join(body_lines[2:])) ### Print from the third line to the end
     print("================== End of Mail [{}] ====================\n".format(id))
 
-def get_folder_name():
-    folder_name = "Attachments"
+def get_folder_name(mail_id):
+    folder_name = "Attachments/Mail" + str(mail_id)
 
     # Get the current directory
     current_directory = os.getcwd()
-    
+
     # Create the path for the new folder by joining Current path to new folder name together
     folder_path = os.path.join(current_directory, folder_name)
 
@@ -45,6 +45,7 @@ def extract_attachments(msg, folder_path):
         file_path = os.path.join(folder_path, filename)
         
         if filename:
+            
             with open(file_path, 'wb') as downloaded_file:
                 downloaded_file.write(part.get_payload(decode=True))
             downloaded_file.close()
@@ -93,6 +94,6 @@ for id in mail_id_list:
     _, mail_data = myMail.fetch(id, '(RFC822)') ## Fetch mail data.
     message = email.message_from_bytes(mail_data[0][1]) ## Construct Message from mail data
     display_message(message)
-    extract_attachments(message, get_folder_name())
+    extract_attachments(message, get_folder_name(id))
 
 myMail.close()
