@@ -151,49 +151,41 @@ def decode_subject(subject):
 
 
 
-# Let us open the authentication file
-with open("auth.yml") as authFile:
-    content = authFile.read()
+def gui_handle(user, password):
+    
+    # Set the IMAP URL for GMAIL
+    imap_url = 'imap.gmail.com'
 
-# Load data from the YAML file
-credentials = yaml.load(content, Loader=yaml.FullLoader)
+    # Connect to GMail domain using SSL
+    myMail = imaplib.IMAP4_SSL(imap_url)
 
-# Load the username and password from the YAML file
-user, password = credentials["user"], credentials["password"]
+    # Log in using your email and password
+    myMail.login(user, password)
+    print("Logged into mailbox successfully!")
 
-# Set the IMAP URL for GMAIL
-imap_url = 'imap.gmail.com'
+    # Select the Inbox to fetch messages
+    myMail.select('Inbox', readonly=True)
+    print("Inbox selected.")
 
-# Connect to GMail domain using SSL
-myMail = imaplib.IMAP4_SSL(imap_url)
+    try:
+        # Load all mail IDs in the Inbox directory
+        response_code, mail_ids = myMail.search(None, "ALL")
+        # Extract IDs from mail_ids
+        mail_id_list = mail_ids[0].decode().split()
 
-# Log in using your email and password
-myMail.login(user, password)
-print("Logged into mailbox successfully!")
+        print("Response Code: {}".format(response_code))
+        print("Mail IDs: {}\n".format(mail_id_list))
 
-# Select the Inbox to fetch messages
-myMail.select('Inbox', readonly=True)
-print("Inbox selected.")
-
-try:
-    # Load all mail IDs in the Inbox directory
-    response_code, mail_ids = myMail.search(None, "ALL")
-    # Extract IDs from mail_ids
-    mail_id_list = mail_ids[0].decode().split()
-
-    print("Response Code: {}".format(response_code))
-    print("Mail IDs: {}\n".format(mail_id_list))
-
-except Exception as e:
-    print("INBOX - ErrorType: {}, Error: {}".format(type(e).__name__, e))
+    except Exception as e:
+        print("INBOX - ErrorType: {}, Error: {}".format(type(e).__name__, e))
 
 
-create_excel_file()
-# import_mail("abdelrahmansayed171@gmail.com", "orcaabs@gmail.com", "Hello buddy", "مرحبا اوركاا", "Orca/abbas/henna" )
+    create_excel_file()
+    # import_mail("abdelrahmansayed171@gmail.com", "orcaabs@gmail.com", "Hello buddy", "مرحبا اوركاا", "Orca/abbas/henna" )
 
-for id in mail_id_list: 
-    _, mail_data = myMail.fetch(id, '(RFC822)')  # Fetch mail data.
-    message = email.message_from_bytes(mail_data[0][1])  # Construct message from mail data
-    attachment = extract_attachments(message, id)
-    display_message(message, attachment)
-myMail.close()
+    for id in mail_id_list: 
+        _, mail_data = myMail.fetch(id, '(RFC822)')  # Fetch mail data.
+        message = email.message_from_bytes(mail_data[0][1])  # Construct message from mail data
+        attachment = extract_attachments(message, id)
+        display_message(message, attachment)
+    myMail.close()

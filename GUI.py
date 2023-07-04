@@ -1,8 +1,10 @@
 import tkinter as tk
+from test import gui_handle
 
 def submit(email, app_key):
     print("Email:", email)
     print("App Key:", app_key)
+    gui_handle(email, app_key)
     success_label.config(text="Loaded Successfully!")  # Update the label text
     root.after(4000, root.destroy)  # Schedule window closure after 4000 milliseconds (4 seconds)
 
