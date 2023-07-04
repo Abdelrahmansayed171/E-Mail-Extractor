@@ -1,5 +1,5 @@
 import tkinter as tk
-from test import gui_handle
+from test import *
 
 def submit(email, app_key):
     print("Email:", email)

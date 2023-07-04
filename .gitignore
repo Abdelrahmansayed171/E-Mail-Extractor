@@ -2,3 +2,7 @@ auth.yml
 Attachments/*
 E-mails.xlsx
 _pycache_/*
+venv/*
+build/*
+dist/*
+GUI.spec

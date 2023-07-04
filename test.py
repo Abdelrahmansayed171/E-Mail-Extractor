@@ -1,6 +1,6 @@
+import re
 import imaplib
 import email
-import yaml
 import pandas as pd
 import os
 from email.header import decode_header
@@ -66,8 +66,7 @@ def import_mail(from_user, to, cc, date, subject, body, attachments=""):
 
 
 
-def display_message(msg,attachments):
-
+def display_message(msg, attachments, id):
     from_mail = msg.get("From")
     to_mail = msg.get("To")
     cc = msg.get("Bcc")
@@ -85,19 +84,27 @@ def display_message(msg,attachments):
     print("Body : ")
     for part in msg.walk():
         if part.get_content_type() == "text/plain":
-            body_lines = part.get_payload(decode=True).decode("utf-8")
-            print(body_lines)
-            body = body + body_lines
+            try:
+                body_lines = part.get_payload(decode=True).decode("utf-8")
+                print(body_lines)
+                body += body_lines
+            except UnicodeDecodeError:
+                print("Skipping email [{}] due to decoding error.".format(id))
+                return
+
     print("================== End of Mail [{}] ====================\n".format(id))
 
     import_mail(from_mail, to_mail, cc, date, subject, body, attachments)
 
-
 def get_folder_name(mail_id):
+
     folder_name = "Attachments/Mail" + str(mail_id)
 
     # Get the current directory
     current_directory = os.getcwd()
+
+    os.makedirs(os.path.join(current_directory,"Attachments"), exist_ok=True)
+
 
     # Create the path for the new folder by joining Current path to new folder name together
     folder_path = os.path.join(current_directory, folder_name)
@@ -108,8 +115,14 @@ def get_folder_name(mail_id):
         os.makedirs(folder_path, exist_ok=True)
         return folder_path
 
+
+def sanitize_filename(filename):
+    # Replace invalid characters with underscores
+    sanitized_filename = re.sub(r'[\\/:*?"<>|]', '_', filename)
+    return sanitized_filename
+
+
 def extract_attachments(msg, mail_id):
-    
     file_path = "No attachment found."
 
     for part in msg.walk():
@@ -120,15 +133,20 @@ def extract_attachments(msg, mail_id):
             continue
 
         filename = part.get_filename()
-        
 
         if filename:
-            folder_path = get_folder_name(mail_id)
-            file_path = os.path.join(folder_path, filename)
-            with open(file_path, 'wb') as downloaded_file:
-                downloaded_file.write(part.get_payload(decode=True))
+            try:
+                folder_path = get_folder_name(mail_id)
+                # Replace invalid characters in the filename
+                filename = sanitize_filename(filename)
+                file_path = os.path.join(folder_path, filename)
+                with open(file_path, 'wb') as downloaded_file:
+                    downloaded_file.write(part.get_payload(decode=True))
+            except OSError as e:
+                print("Skipping attachment due to error: {}".format(str(e)))
+                continue
             downloaded_file.close()
-    
+
     if file_path == "No attachment found.":
         return file_path
     else:
@@ -140,10 +158,14 @@ def decode_subject(subject):
         decoded_parts = decode_header(subject)
         for part, encoding in decoded_parts:
             if isinstance(part, bytes):
-                if encoding:
-                    part = part.decode(encoding)
-                else:
-                    part = part.decode("utf-8", "ignore")
+                try:
+                    if encoding:
+                        part = part.decode(encoding)
+                    else:
+                        part = part.decode("utf-8", "ignore")
+                except UnicodeDecodeError:
+                    print("Skipping subject due to decoding error: {}".format(subject))
+                    return ""
             elif isinstance(part, str):
                 part = part.encode("utf-8", "ignore").decode("utf-8")
             decoded_subject += part
@@ -187,5 +209,5 @@ def gui_handle(user, password):
         _, mail_data = myMail.fetch(id, '(RFC822)')  # Fetch mail data.
         message = email.message_from_bytes(mail_data[0][1])  # Construct message from mail data
         attachment = extract_attachments(message, id)
-        display_message(message, attachment)
+        display_message(message, attachment, id)
     myMail.close()
