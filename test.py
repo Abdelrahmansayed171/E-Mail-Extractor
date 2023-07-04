@@ -1,7 +1,57 @@
 import imaplib
 import email
 import yaml
+import pandas as pd
 from email.header import decode_header
+
+
+def create_excel_file():
+    # FILE_NAME = 'E-mails.xlsx'
+
+    data = {
+        'From': [],
+        'To': [],
+        'Subject': [],
+        'body': [],
+        'attachments':[] 
+    }
+
+    # Create Data Frame with the given data
+    data_frame = pd.DataFrame(data)
+
+    # Create an Excel writer using pandas
+    writer = pd.ExcelWriter('E-mails.xlsx', engine='xlsxwriter')
+    
+    # Write the DataFrame to an Excel sheet
+    data_frame.to_excel(writer, sheet_name='Sheet1', index=False)
+
+    print("Excel File Created!")
+    return writer
+
+def import_mail(writer, from_user, to, subject, body, attachments=""):
+
+    # Read the existing Excel file into a DataFrame
+    data_frame = pd.read_excel('E-mails.xlsx')
+
+    # Create a new record as a dictionary
+    new_mail = {
+        'From': from_user,
+        'To': to,
+        'Subject': subject,
+        'body': body,
+        'attachments': attachments
+    }
+
+    # Append the new record to the DataFrame
+    data_frame = data_frame.append(new_mail, ignore_index=True)
+
+    # Write the updated DataFrame to the Excel sheet
+    data_frame.to_excel(writer, sheet_name='Sheet1', index=False)
+
+    # Save the Excel file
+    writer.save()
+
+
 
 def display_message(msg):
     print("================== Start of Mail [{}] ====================".format(id))
@@ -33,6 +83,7 @@ def decode_subject(subject):
                 part = part.encode("utf-8", "ignore").decode("utf-8")
             decoded_subject += part
     return decoded_subject
+
 
 
 # Let us open the authentication file
@@ -72,11 +123,14 @@ except Exception as e:
     print("INBOX - ErrorType: {}, Error: {}".format(type(e).__name__, e))
 
 
+writer = create_excel_file()
+import_mail(writer, "abdelrahmansayed171@gmail.com", "orcaabs@gmail.com", "Hello buddy", "It's Okay hommie", "Orca/abbas/henna" )
+
 for id in mail_id_list:
     if id == '6':
         _, mail_data = myMail.fetch(id, '(RFC822)')  # Fetch mail data.
         message = email.message_from_bytes(mail_data[0][1])  # Construct message from mail data
         display_message(message)
 
-
+writer.close()
 myMail.close()
