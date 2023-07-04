@@ -12,9 +12,11 @@ def create_excel_file():
     data = {
         'From': [],
         'To': [],
+        'CC': [],
+        'Date': [],
         'Subject': [],
         'Body': [],
-        'Attachments':[] 
+        'Attachments':[]
     }
 
     # Create Data Frame with the given data
@@ -29,7 +31,7 @@ def create_excel_file():
     print("Excel File Created!")
     writer.close()
 
-def import_mail(from_user, to, subject, body, attachments=""):
+def import_mail(from_user, to, cc, date, subject, body, attachments=""):
 
     # Read the existing Excel file into a DataFrame
     reader = pd.read_excel('E-mails.xlsx')
@@ -38,6 +40,8 @@ def import_mail(from_user, to, subject, body, attachments=""):
     new_mail = {
         'From': [from_user],
         'To': [to],
+        'CC': [cc],
+        'Date':[date],
         'Subject': [subject],
         'Body': [body],
         'Attachments': [attachments]
@@ -58,9 +62,8 @@ def import_mail(from_user, to, subject, body, attachments=""):
 
 
 
-def display_message(msg):
+def display_message(msg,attachments):
 
-    attachments_folder="Mail" + str(mail_id)
     from_mail = msg.get("From")
     to_mail = msg.get("To")
     cc = msg.get("Bcc")
@@ -82,6 +85,8 @@ def display_message(msg):
             print(body_lines)
             body = body + body_lines
     print("================== End of Mail [{}] ====================\n".format(id))
+
+    import_mail(from_mail, to_mail, cc, date, subject, body, attachments)
 
 
 def get_folder_name(mail_id):
@@ -121,7 +126,7 @@ def extract_attachments(msg, mail_id):
             downloaded_file.close()
     
     if file_path == "No attachment found.":
-        return "No attachment found."
+        return file_path
     else:
         return "Mail" + str(mail_id)
 
@@ -185,6 +190,6 @@ create_excel_file()
 for id in mail_id_list: 
     _, mail_data = myMail.fetch(id, '(RFC822)')  # Fetch mail data.
     message = email.message_from_bytes(mail_data[0][1])  # Construct message from mail data
-    display_message()
-    extract_attachments(message, id)
+    attachment = extract_attachments(message, id)
+    display_message(message, attachment)
 myMail.close()
