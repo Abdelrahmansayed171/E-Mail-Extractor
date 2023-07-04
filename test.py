@@ -2,6 +2,7 @@ import imaplib
 import email
 import yaml
 import pandas as pd
+import os
 from email.header import decode_header
 
 
@@ -72,6 +73,41 @@ def display_message(msg):
             print(body_lines)
     print("================== End of Mail [{}] ====================\n".format(id))
 
+def get_folder_name(mail_id):
+    folder_name = "Attachments/Mail" + str(mail_id)
+
+    # Get the current directory
+    current_directory = os.getcwd()
+
+    # Create the path for the new folder by joining Current path to new folder name together
+    folder_path = os.path.join(current_directory, folder_name)
+
+    if os.path.isdir(folder_path):
+        return folder_path
+    else:
+        os.makedirs(folder_path, exist_ok=True)
+        return folder_path
+
+def extract_attachments(msg, mail_id):
+    
+    file_path = "No attachment found."
+
+    for part in msg.walk():
+        if part.get_content_maintype() == 'multipart':
+            continue
+
+        if part.get('Content-Disposition') is None:
+            continue
+
+        filename = part.get_filename()
+        
+
+        if filename:
+            folder_path = get_folder_name(mail_id)
+            file_path = os.path.join(folder_path, filename)
+            with open(file_path, 'wb') as downloaded_file:
+                downloaded_file.write(part.get_payload(decode=True))
+            downloaded_file.close()
 
 def decode_subject(subject):
     decoded_subject = ""
@@ -130,10 +166,9 @@ except Exception as e:
 create_excel_file()
 import_mail("abdelrahmansayed171@gmail.com", "orcaabs@gmail.com", "Hello buddy", "مرحبا اوركاا", "Orca/abbas/henna" )
 
-for id in mail_id_list:
-    if id == '6':
-        _, mail_data = myMail.fetch(id, '(RFC822)')  # Fetch mail data.
-        message = email.message_from_bytes(mail_data[0][1])  # Construct message from mail data
-        display_message(message)
-
+for id in mail_id_list: 
+    _, mail_data = myMail.fetch(id, '(RFC822)')  # Fetch mail data.
+    message = email.message_from_bytes(mail_data[0][1])  # Construct message from mail data
+    display_message(message)
+    extract_attachments(message, id)
 myMail.close()
