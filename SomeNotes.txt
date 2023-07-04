@@ -1,3 +1,16 @@
 1. git rm --cached E-mails.xlsx
 2. git rm -r --cached folder_name
 
+************ Deploy into .exe file inside Folder full of dependencies ****************
+	
+1. pip install pyinstaller	
+2. pyinstaller <filename>
+3. go to dist/main then open main.exe
+
+************ Deploy into .exe one file ****************
+
+1. pyinstaller <filename> --onefile
+
+************ Deploy into .exe one file without cmd and run in single window ****************
+
+1. pyinstaller <filename> --onefile -w
