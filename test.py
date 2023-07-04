@@ -59,19 +59,30 @@ def import_mail(from_user, to, subject, body, attachments=""):
 
 
 def display_message(msg):
+
+    attachments_folder="Mail" + str(mail_id)
+    from_mail = msg.get("From")
+    to_mail = msg.get("To")
+    cc = msg.get("Bcc")
+    date = msg.get("Date")
+    subject = decode_subject(msg.get("Subject"))
+    body = ""
+
     print("================== Start of Mail [{}] ====================".format(id))
-    print("From       : {}".format(msg.get("From")))
-    print("To         : {}".format(msg.get("To")))
-    print("Bcc        : {}".format(msg.get("Bcc")))
-    print("Date       : {}".format(msg.get("Date")))
-    print("Subject    : {}".format(decode_subject(msg.get("Subject"))))
+    print("From       : {}".format(from_mail))
+    print("To         : {}".format(to_mail))
+    print("Bcc        : {}".format(cc))
+    print("Date       : {}".format(date))
+    print("Subject    : {}".format(subject))
 
     print("Body : ")
     for part in msg.walk():
         if part.get_content_type() == "text/plain":
             body_lines = part.get_payload(decode=True).decode("utf-8")
             print(body_lines)
+            body = body + body_lines
     print("================== End of Mail [{}] ====================\n".format(id))
+
 
 def get_folder_name(mail_id):
     folder_name = "Attachments/Mail" + str(mail_id)
@@ -108,6 +119,11 @@ def extract_attachments(msg, mail_id):
             with open(file_path, 'wb') as downloaded_file:
                 downloaded_file.write(part.get_payload(decode=True))
             downloaded_file.close()
+    
+    if file_path == "No attachment found.":
+        return "No attachment found."
+    else:
+        return "Mail" + str(mail_id)
 
 def decode_subject(subject):
     decoded_subject = ""
@@ -164,11 +180,11 @@ except Exception as e:
 
 
 create_excel_file()
-import_mail("abdelrahmansayed171@gmail.com", "orcaabs@gmail.com", "Hello buddy", "مرحبا اوركاا", "Orca/abbas/henna" )
+# import_mail("abdelrahmansayed171@gmail.com", "orcaabs@gmail.com", "Hello buddy", "مرحبا اوركاا", "Orca/abbas/henna" )
 
 for id in mail_id_list: 
     _, mail_data = myMail.fetch(id, '(RFC822)')  # Fetch mail data.
     message = email.message_from_bytes(mail_data[0][1])  # Construct message from mail data
-    display_message(message)
+    display_message()
     extract_attachments(message, id)
 myMail.close()
