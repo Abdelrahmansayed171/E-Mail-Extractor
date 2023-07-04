@@ -12,8 +12,8 @@ def create_excel_file():
         'From': [],
         'To': [],
         'Subject': [],
-        'body': [],
-        'attachments':[] 
+        'Body': [],
+        'Attachments':[] 
     }
 
     # Create Data Frame with the given data
@@ -26,30 +26,34 @@ def create_excel_file():
     data_frame.to_excel(writer, sheet_name='Sheet1', index=False)
 
     print("Excel File Created!")
-    return writer
+    writer.close()
 
-def import_mail(writer, from_user, to, subject, body, attachments=""):
+def import_mail(from_user, to, subject, body, attachments=""):
 
     # Read the existing Excel file into a DataFrame
-    data_frame = pd.read_excel('E-mails.xlsx')
+    reader = pd.read_excel('E-mails.xlsx')
 
     # Create a new record as a dictionary
     new_mail = {
-        'From': from_user,
-        'To': to,
-        'Subject': subject,
-        'body': body,
-        'attachments': attachments
+        'From': [from_user],
+        'To': [to],
+        'Subject': [subject],
+        'Body': [body],
+        'Attachments': [attachments]
     }
 
-    # Append the new record to the DataFrame
-    data_frame = data_frame.append(new_mail, ignore_index=True)
+    new_mail = pd.DataFrame(new_mail)
 
-    # Write the updated DataFrame to the Excel sheet
-    data_frame.to_excel(writer, sheet_name='Sheet1', index=False)
 
-    # Save the Excel file
-    writer.save()
+    # Concatenate the existing DataFrame with the new record
+    data_frame = pd.concat([reader, new_mail], ignore_index=True)
+
+    # used engine='openpyxl' because append operation is not supported by xlsxwriter
+    writer = pd.ExcelWriter('E-mails.xlsx', engine='openpyxl', mode='a', if_sheet_exists="overlay")
+
+    # append new dataframe to the excel sheet
+    data_frame.to_excel(writer, index=False, header=False, startrow=len(reader) + 1)
+    writer.close()
 
 
 
@@ -123,8 +127,8 @@ except Exception as e:
     print("INBOX - ErrorType: {}, Error: {}".format(type(e).__name__, e))
 
 
-writer = create_excel_file()
-import_mail(writer, "abdelrahmansayed171@gmail.com", "orcaabs@gmail.com", "Hello buddy", "It's Okay hommie", "Orca/abbas/henna" )
+create_excel_file()
+import_mail("abdelrahmansayed171@gmail.com", "orcaabs@gmail.com", "Hello buddy", "مرحبا اوركاا", "Orca/abbas/henna" )
 
 for id in mail_id_list:
     if id == '6':
@@ -132,5 +136,4 @@ for id in mail_id_list:
         message = email.message_from_bytes(mail_data[0][1])  # Construct message from mail data
         display_message(message)
 
-writer.close()
 myMail.close()
