@@ -34,31 +34,35 @@ def create_excel_file():
 def import_mail(from_user, to, cc, date, subject, body, attachments=""):
 
     # Read the existing Excel file into a DataFrame
-    reader = pd.read_excel('E-mails.xlsx')
+    df = pd.read_excel('E-mails.xlsx')
 
     # Create a new record as a dictionary
-    new_mail = {
+    new_record = {
         'From': [from_user],
         'To': [to],
         'CC': [cc],
-        'Date':[date],
+        'Date': [date],
         'Subject': [subject],
         'Body': [body],
         'Attachments': [attachments]
     }
+    new_record = pd.DataFrame(new_record)
 
-    new_mail = pd.DataFrame(new_mail)
+    # Append the new record to the DataFrame
+    df = pd.concat([df, new_record], ignore_index=True)
+    
+    df.drop_duplicates()
 
+    # Create an Excel writer using pandas
+    writer = pd.ExcelWriter('E-mails.xlsx', engine='xlsxwriter')
 
-    # Concatenate the existing DataFrame with the new record
-    data_frame = pd.concat([reader, new_mail], ignore_index=True)
+    # Write the updated DataFrame to the Excel sheet
+    df.to_excel(writer, sheet_name='Sheet1', index=False)
 
-    # used engine='openpyxl' because append operation is not supported by xlsxwriter
-    writer = pd.ExcelWriter('E-mails.xlsx', engine='openpyxl', mode='a', if_sheet_exists="overlay")
-
-    # append new dataframe to the excel sheet
-    data_frame.to_excel(writer, index=False, header=False, startrow=len(reader) + 1)
+    # Save the Excel file
     writer.close()
+
+    print("New record appended to the Excel file!")
 
 
 
