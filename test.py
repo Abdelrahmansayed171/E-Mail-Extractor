@@ -207,12 +207,12 @@ def gui_handle(user, password):
         print("INBOX - ErrorType: {}, Error: {}".format(type(e).__name__, e))
 
 
-    # create_excel_file()
-    # # import_mail("abdelrahmansayed171@gmail.com", "orcaabs@gmail.com", "Hello buddy", "مرحبا اوركاا", "Orca/abbas/henna" )
+    create_excel_file()
+    # import_mail("abdelrahmansayed171@gmail.com", "orcaabs@gmail.com", "Hello buddy", "مرحبا اوركاا", "Orca/abbas/henna" )
 
-    # for id in mail_id_list: 
-    #     _, mail_data = myMail.fetch(id, '(RFC822)')  # Fetch mail data.
-    #     message = email.message_from_bytes(mail_data[0][1])  # Construct message from mail data
-    #     attachment = extract_attachments(message, id)
-    #     display_message(message, attachment, id)
-    # myMail.close()
+    for id in mail_id_list: 
+        _, mail_data = myMail.fetch(id, '(RFC822)')  # Fetch mail data.
+        message = email.message_from_bytes(mail_data[0][1])  # Construct message from mail data
+        attachment = extract_attachments(message, id)
+        display_message(message, attachment, id)
+    myMail.close()
