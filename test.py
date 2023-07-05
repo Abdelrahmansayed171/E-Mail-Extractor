@@ -4,7 +4,11 @@ import email
 import pandas as pd
 import os
 from email.header import decode_header
+import re
+import random
+import string
 
+cnt = 0
 
 def create_excel_file():
     # FILE_NAME = 'E-mails.xlsx'
@@ -90,6 +94,7 @@ def display_message(msg, attachments, id):
                 body += body_lines
             except UnicodeDecodeError:
                 print("Skipping email [{}] due to decoding error.".format(id))
+                cnt+=1
                 return
 
     print("================== End of Mail [{}] ====================\n".format(id))
@@ -117,14 +122,22 @@ def get_folder_name(mail_id):
 
 
 def sanitize_filename(filename):
-    # Decode the filename from UTF-8 and remove the encoding prefix
-    decoded_filename = decode_header(filename)[0][0]
-    if isinstance(decoded_filename, bytes):
-        # If the filename is still bytes, decode it as UTF-8
-        decoded_filename = decoded_filename.decode('utf-8')
-    # Replace invalid characters with underscores
+    try:
+        # Decode the filename from UTF-8 and remove the encoding prefix
+        decoded_filename = decode_header(filename)[0][0]
+        if isinstance(decoded_filename, bytes):
+            # If the filename is still bytes, decode it as UTF-8
+            decoded_filename = decoded_filename.decode('utf-8')
+        # Replace invalid characters with underscores
+        sanitized_filename = re.sub(r'[\\/:*?"<>|]', '_', decoded_filename)
+    except UnicodeDecodeError:
+        # If decoding fails, generate a random filename
+        random_string = ''.join(random.choices(string.ascii_letters + string.digits, k=8))
+        return random_string
+
     sanitized_filename = re.sub(r'[\\/:*?"<>|]', '_', decoded_filename)
     return sanitized_filename
+
 
 
 def extract_attachments(msg, mail_id):
@@ -149,6 +162,7 @@ def extract_attachments(msg, mail_id):
                     downloaded_file.write(part.get_payload(decode=True))
             except OSError as e:
                 print("Skipping attachment due to error: {}".format(str(e)))
+                cnt+= 1
                 continue
             downloaded_file.close()
 
@@ -176,7 +190,23 @@ def decode_subject(subject):
             decoded_subject += part
     return decoded_subject
 
+def check_emails(mail):
+    important = False
 
+    important_emails=[
+        "egypt-power",
+        "morlock-motors",
+        "gmail",
+        "goldmaxpower"
+        "yahoo",
+        "outlook"
+    ]
+
+    for email in important_emails:
+       if email in mail:
+           important = True
+    
+    return important
 
 def gui_handle(user, password):
     
@@ -209,10 +239,14 @@ def gui_handle(user, password):
 
     create_excel_file()
     # import_mail("abdelrahmansayed171@gmail.com", "orcaabs@gmail.com", "Hello buddy", "مرحبا اوركاا", "Orca/abbas/henna" )
-
+    
     for id in mail_id_list: 
         _, mail_data = myMail.fetch(id, '(RFC822)')  # Fetch mail data.
         message = email.message_from_bytes(mail_data[0][1])  # Construct message from mail data
-        attachment = extract_attachments(message, id)
-        display_message(message, attachment, id)
+        from_mail = message.get("From")
+        if check_emails(from_mail):
+            attachment = extract_attachments(message, id)
+            display_message(message, attachment, id)
+    
     myMail.close()
+    print(cnt)

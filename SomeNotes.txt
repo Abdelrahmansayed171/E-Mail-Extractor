@@ -14,3 +14,5 @@
 ************ Deploy into .exe one file without cmd and run in single window ****************
 
 1. pyinstaller <filename> --onefile -w
+
+****_> python<version> -m venv <virtual-environment-name>
