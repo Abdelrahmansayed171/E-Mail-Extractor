@@ -117,9 +117,15 @@ def get_folder_name(mail_id):
 
 
 def sanitize_filename(filename):
+    # Decode the filename from UTF-8 and remove the encoding prefix
+    decoded_filename = decode_header(filename)[0][0]
+    if isinstance(decoded_filename, bytes):
+        # If the filename is still bytes, decode it as UTF-8
+        decoded_filename = decoded_filename.decode('utf-8')
     # Replace invalid characters with underscores
-    sanitized_filename = re.sub(r'[\\/:*?"<>|]', '_', filename)
+    sanitized_filename = re.sub(r'[\\/:*?"<>|]', '_', decoded_filename)
     return sanitized_filename
+
 
 
 def extract_attachments(msg, mail_id):
