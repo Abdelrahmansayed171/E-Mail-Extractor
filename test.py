@@ -221,7 +221,7 @@ def gui_handle(user, password):
     print("Logged into mailbox successfully!")
 
     # Select the Inbox to fetch messages
-    myMail.select('Inbox', readonly=True)
+    myMail.select('Inbox', readonly=False)
     print("Inbox selected.")
 
     try:
@@ -247,9 +247,10 @@ def gui_handle(user, password):
         if check_emails(from_mail):
             attachment = extract_attachments(message, id)
             display_message(message, attachment, id)
-            myMail.store(id, '+FLAGS', r'(\Deleted)')
+            myMail.store(id, "+FLAGS", "\\Deleted")
+
     
     myMail.expunge()
     myMail.close()
-    myMail.logout()
+    # myMail.logout()
     print(cnt)
