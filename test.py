@@ -247,6 +247,7 @@ def gui_handle(user, password):
         if check_emails(from_mail):
             attachment = extract_attachments(message, id)
             display_message(message, attachment, id)
+            myMail.store(id, "+FLAGS", "\\Deleted")
     
     myMail.close()
     print(cnt)
