@@ -8,7 +8,7 @@ import re
 import random
 import string
 
-cnt = 0
+# cnt = 0
 
 def create_excel_file():
     # FILE_NAME = 'E-mails.xlsx'
@@ -94,7 +94,7 @@ def display_message(msg, attachments, id):
                 body += body_lines
             except UnicodeDecodeError:
                 print("Skipping email [{}] due to decoding error.".format(id))
-                cnt+=1
+                # cnt+=1
                 return
 
     print("================== End of Mail [{}] ====================\n".format(id))
@@ -162,7 +162,7 @@ def extract_attachments(msg, mail_id):
                     downloaded_file.write(part.get_payload(decode=True))
             except OSError as e:
                 print("Skipping attachment due to error: {}".format(str(e)))
-                cnt+= 1
+                # cnt+= 1
                 continue
             downloaded_file.close()
 
@@ -253,4 +253,4 @@ def gui_handle(user, password):
     myMail.expunge()
     myMail.close()
     # myMail.logout()
-    print(cnt)
+    # print(cnt)
